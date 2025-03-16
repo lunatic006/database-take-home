@@ -49,16 +49,7 @@ For my second iteration, I notice that the query distribution actually isn't mon
 
 Now we try to work on reducing the median time. We can do by utilizing the fact that we have 10 chances to send 0 -> 2 -> 4, and 1 -> 3 -> 5, and equal probability of sending a random node to 0 vs 1. In order for the median to be small, we actually want the process to fail when it doesn't align with the even/odd that we want, so we create "dead-nodes" that just cycle into each other, that the process ends up in if we don't get what we want immediately. This gives us a combined score of 596 which is better.
 
-For my third iteration, I try instead of using even/odd to do mod 3 chains, to see if that also improves. Eventually, I expect that the rate of success for mod n chains is $(\frac{n-1}{n})^{10}$, and the median time is roughly $1 + 6/n$ (this is from the fact that 6 targets take up half of the queries). Doing the math (score calculation is $success_rate \times (\ln (566.5/median) + 1)$, it seems like n=3 should be an improvement, so we try it. However, implementing it, the graph has too many edges (since most of the nodes have 3 edges). We fix this by offloading the responsibility of choosing between 3 vertices to input randomness between the nodes that are never queried, to the random picking of the nodes themselves: with 
-'''
-optimized_graph[str(i)] = {str(queried_nodes[i % 3]) : 1}
-'''
-instead of
-''' 
-optimized_graph[str(i)] = {str(queried_nodes[0]) : 1, str(queried_nodes[1]) : 1, str(queried_nodes[2]) : 1}
-'''
-
-Our score here is 621.49, which is a lot better than our naive first implementation.
+For my third iteration, I try instead of using even/odd to do mod 3 chains, to see if that also improves. Eventually, I expect that the rate of success for mod n chains is $(\frac{n-1}{n})^{10}$, and the median time is roughly $1 + 6/n$ (this is from the fact that 6 targets take up half of the queries). Doing the math (score calculation is $success-rate \times (\ln (566.5/median) + 1)$, it seems like n=3 should be an improvement, so we try it. However, implementing it, the graph has too many edges (since most of the nodes have 3 edges). We fix this by offloading the responsibility of choosing between 3 vertices to input randomness between the nodes that are never queried, to the random picking of the nodes themselves. Our score here is 621.49, which is a lot better than our naive first implementation.
 
 Finally, we check the n = 6 case to see if that does better. This doesn't score better (515), since the tradeoff between success rate and optimized path length (now 2) is too much. The success rate was 75% while the path length was 2. 
 
