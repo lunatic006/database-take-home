@@ -127,54 +127,40 @@ def optimize_graph(
     # sophisticated strategy based on query analysis!
     # ---------------------------------------------------------------
 
-
-    max_query = max([result['target'] for result in results['detailed_results']])
-
-    queried_nodes = list(set([result['target'] for result in results['detailed_results']]))
-    queried_nodes.sort()
+    ## list all targeted queries, removing repeats
+    queried_nodes = [result['target'] for result in results['detailed_results']]
+    num_queries = len(queried_nodes)
+    queried_nodes_dict = {}
+    for node in queried_nodes: ## dictionary of queries and apperances
+        if node not in queried_nodes_dict:
+            queried_nodes_dict[node] = 1
+        else:
+            queried_nodes_dict[node] += 1
+    queried_nodes = list(set(queried_nodes)) # remove duplicates
+    queried_nodes.sort(key = lambda i : queried_nodes_dict[i], reverse=True) # sort queried_nodes by how they are accessed.
     print(queried_nodes)
+
+    ## find median query:
+    total = 0
+    for median_index in range(len(queried_nodes)):
+        total += queried_nodes_dict[queried_nodes[median_index]]
+        if total > num_queries / 2: break
+    # median_index is now index for which half of queries fall before it.
+    print(median_index)
+
 
     optimized_graph = {}
     for i in range(num_nodes):
-        if i in queried_nodes[:-19]:
-            optimized_graph[str(i)] = {str(queried_nodes[queried_nodes.index(i) + 1]) : 1}
+        if i in queried_nodes[:-3]:
+            optimized_graph[str(i)] = {str(queried_nodes[queried_nodes.index(i) + 3]) : 1}
+        elif i in queried_nodes[-3:]:
+            if i == queried_nodes[-1]:
+                optimized_graph[str(i)] = {str(queried_nodes[queried_nodes.index(i) - 1]) : 1}
+            else:
+                optimized_graph[str(i)] = {str(queried_nodes[queried_nodes.index(i) + 1]) : 1}
         else:
-            optimized_graph[str(i)] = {'0' : 1}
+            optimized_graph[str(i)] = {str(queried_nodes[i % 3]) : 1}
 
-    print(optimized_graph)
-    # Count total edges in the initial graph
-    # total_edges = sum(len(edges) for edges in optimized_graph.values())
-
-    # # If we exceed the limit, we need to prune edges
-    # if total_edges > max_total_edges:
-    #     print(
-    #         f"Initial graph has {total_edges} edges, need to remove {total_edges - max_total_edges}"
-    #     )
-
-    #     # Example pruning logic (replace with your optimized strategy)
-    #     edges_to_remove = total_edges - max_total_edges
-    #     removed = 0
-
-    #     # Sort nodes by number of outgoing edges (descending)
-    #     nodes_by_edge_count = sorted(
-    #         optimized_graph.keys(), key=lambda n: len(optimized_graph[n]), reverse=True
-    #     )
-
-    #     # Remove edges from nodes with the most connections first
-    #     for node in nodes_by_edge_count:
-    #         if removed >= edges_to_remove:
-    #             break
-
-    #         # As a simplistic example, remove the edge with lowest weight
-    #         if len(optimized_graph[node]) > 1:  # Ensure node keeps at least one edge
-    #             # Find edge with minimum weight
-    #             min_edge = min(optimized_graph[node].items(), key=lambda x: x[1])
-    #             del optimized_graph[node][min_edge[0]]
-    #             removed += 1
-
-    # =============================================================
-    # End of your implementation
-    # =============================================================
 
     # Verify constraints
     if not verify_constraints(optimized_graph, max_edges_per_node, max_total_edges):
