@@ -138,7 +138,6 @@ def optimize_graph(
             queried_nodes_dict[node] += 1
     queried_nodes = list(set(queried_nodes)) # remove duplicates
     queried_nodes.sort(key = lambda i : queried_nodes_dict[i], reverse=True) # sort queried_nodes by how they are accessed.
-    print(queried_nodes)
 
     ## find median query:
     total = 0
@@ -146,7 +145,6 @@ def optimize_graph(
         total += queried_nodes_dict[queried_nodes[median_index]]
         if total > num_queries / 2: break
     # median_index is now index for which half of queries fall before it.
-    print(median_index)
 
 
     optimized_graph = {}
